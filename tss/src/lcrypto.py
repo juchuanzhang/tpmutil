@@ -5,7 +5,7 @@ Created on 28/10/2014
 '''
 
 import Crypto.Hash.HMAC as cHMAC
-from kdf.nist import AbstractNIST
+from .nist import AbstractNIST
 
 class NIST(AbstractNIST):
     

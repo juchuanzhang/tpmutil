@@ -1,12 +1,29 @@
 import platform
 from .TpmTypes import *
 from .TpmDevice import *
-
+from tpmstream.io.binary import Binary
+from tpmstream.io.pretty import Pretty
+from tpmstream.spec.commands.commands import Command
+from tpmstream.spec.commands.responses import Response
 
 Owner = TPM_HANDLE(TPM_RH.OWNER)
 Endorsement = TPM_HANDLE(TPM_RH.ENDORSEMENT)
 
 NullSymDef = TPMT_SYM_DEF(TPM_ALG_ID.NULL, 0, TPM_ALG_ID.NULL)
+
+def parse_command(buffer=b"\x80\x01\x00\x00\x00\x0c\x00\x00\x01\x44\x00\x00"):
+    events = Binary.marshal(tpm_type=Command, buffer=buffer, command_code=None)
+    pretty = Pretty.unmarshal(events=events)
+
+    for line in pretty:
+         print(line)
+
+def parse_response(buffer=b"\x80\x01\x00\x00\x00\x0c\x00\x00\x01\x44\x00\x00", command_code=None):
+    events = Binary.marshal(tpm_type=Response, buffer=buffer, command_code=command_code)
+    pretty = Pretty.unmarshal(events=events)
+
+    for line in pretty:
+         print(line)
 
 class Session:
     def __init__(self,
@@ -187,9 +204,13 @@ class TpmBase(object):
         cmdBuf.writeNumAtPos(cmdBuf.curPos, 2)
         cmdBuf.trim()
         rc = TPM_RC.RETRY
+        print(cmdBuf.buffer.hex())
+        parse_command(cmdBuf.buffer)
         while rc == TPM_RC.RETRY:
             respBuf = self.__device.dispatchCommand(cmdBuf.buffer)
             rc = intFromTpm(respBuf, 6, 4)
+        print(respBuf.hex())
+        parse_response(respBuf, cmdCode)
         return TpmBuffer(respBuf)
     # __dispatchCommand()
 

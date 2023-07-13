@@ -76,7 +76,7 @@ class AbstractNIST(object):
                 lenn = min(len(tmpKey), outputSizeBytes - totalCopied)
             
             #System.arraycopy(tmpKey, 0, derivedKey, destPos, lenn);
-            derivedKey[destPos:destPos+lenn] = tmpKey[:lenn]
+            derivedKey[int(destPos):int(destPos+lenn)] = tmpKey[:int(lenn)]
             totalCopied += len(tmpKey)
             destPos += lenn
             

@@ -10,7 +10,7 @@ Implementation which uses "hmac" library [1].
 '''
 
 from hmac import HMAC as lHMAC
-from kdf.nist import AbstractNIST
+from .nist import AbstractNIST
 
 class NIST(AbstractNIST):
     
