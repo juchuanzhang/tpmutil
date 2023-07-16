@@ -40,16 +40,24 @@ class AbstractNIST(object):
         output = bytearray()
         output.append(inByte)
         return output;
-    
+
+    def _to_four_bytes(self, inByte):
+        assert isinstance( inByte, int ), "This method expected an int as a parameter"
+        assert inByte<2147483648, "The maximum value of ctr is 2147483647 (4 bytes)"
+        output = bytes(4)
+        for i in range(3,-1,-1):
+            output[i] = inByte & 0x000000FF
+            inByte = inByte >> 8
+        return output
     # def _debug_string_as_bytes(self, array_alpha):
     #     import binascii
     #     print binascii.hexlify(array_alpha)
     
-    def derive_key(self, outputSizeBits, fixedInput):
-        assert outputSizeBits >= 56, "Key has size of %d, which is less than minimum of 56-bits." % outputSizeBits
-        assert (outputSizeBits % 8) == 0, "Key size (%d) must be a even multiple of 8-bits." % outputSizeBits
+    def derive_key(self, label=None, contextU=bytes(), contextV=bytes(), bits=128):
+        assert bits >= 56, "Key has size of %d, which is less than minimum of 56-bits." % bits
+        assert (bits % 8) == 0, "Key size (%d) must be a even multiple of 8-bits." % bits
         
-        outputSizeBytes = self._calc_key_size(outputSizeBits); # Safely convert to whole # of bytes.
+        outputSizeBytes = self._calc_key_size(bits) # Safely convert to whole # of bytes.
         derivedKey = [] # bytearray() (better to use this?)
                 
         # Repeatedly call of HmacSHA1 hash until we've collected enough bits
@@ -62,10 +70,24 @@ class AbstractNIST(object):
         
         while True: # ugly translation of do-while
             hmac = self._get_reseted_hmac()
-            hmac.update( self._to_one_byte(ctr) )
+            hmac.update( self._to_four_bytes(ctr) )
             ctr += 1 # note that the maximum value of ctr is 127 (1 byte only)
-            
-            hmac.update(fixedInput)
+            zerobyte = bytes(1)
+            zerobyte[0] = 0
+            if(label is None):
+                hmac.update(zerobyte)
+            elif(len(label)==0):
+                hmac.update(zerobyte)
+            elif(label[len(label)]==0):
+                hmac.update(label)
+            else:
+                hmac.update(label)
+                hmac.update(zerobyte)
+
+            hmac.update(contextU)
+            hmac.update(contextV)
+            hmac.update( self._to_four_bytes(bits) )
+
             tmpKey = hmac.digest() # type: string
             #print self._debug_string_as_bytes(tmpKey)
             # or simply hmac.hexdigest()
