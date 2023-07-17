@@ -1,6 +1,7 @@
 import platform
 from .TpmTypes import *
 from .TpmDevice import *
+from .Crypt import Crypto
 from tpmstream.io.binary import Binary
 from tpmstream.io.pretty import Pretty
 from tpmstream.spec.commands.commands import Command
@@ -27,10 +28,13 @@ def parse_response(buffer=b"\x80\x01\x00\x00\x00\x0c\x00\x00\x01\x44\x00\x00", c
 
 class Session:
     def __init__(self,
+        sessionType = TPM_SESSION_TYPE.PASSWORD,
         sessionHandle = None,
         nonceTpm = None,
-        sessionAttributes = TPMA_SESSION.continueSession,
-        nonceCaller = None
+        nonceCaller=None,
+        salt = None,
+        authHash = None,
+        sessionAttributes=TPMA_SESSION.continueSession
     ):
         self.SessIn = TPMS_AUTH_COMMAND(sessionHandle, nonceCaller, sessionAttributes)
         self.SessOut = TPMS_AUTH_RESPONSE(nonceTpm, sessionAttributes)
@@ -44,6 +48,13 @@ class Session:
         s.SessIn.hmac = authValue
         s.SessOut.sessionAttributes = TPMA_SESSION.continueSession
         return s
+
+    def StartSession(self, keyHandle=None, keyPublic=None, bind=None, encDecAlg=None):
+        digestsz = Crypt.digestSize(authhash)
+        nonceCaller = Crypt.randomBytes(digestsz)
+
+
+
 # class Session
 
 NullPwSession = Session.Pw()
@@ -79,6 +90,18 @@ class TpmBase(object):
         if self.__device:
             self.__device.close()
             self.__device = None
+
+    def poweron(self):
+        platReq = bytesFromList([0, 0, 0, int(TPM_TCP_PROTOCOL.SignalPowerOn)])
+        self.__platSocket.send(platReq)
+
+    def poweroff(self):
+        platReq = bytesFromList([0, 0, 0, int(TPM_TCP_PROTOCOL.SignalPowerOff)])
+        self.__platSocket.send(platReq)
+
+    def reset(self):
+        platReq = bytesFromList([0, 0, 0, int(TPM_TCP_PROTOCOL.SignalReset)])
+        self.__platSocket.send(platReq)
 
     @property
     def lastResponseCode(self): 

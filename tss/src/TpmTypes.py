@@ -3014,6 +3014,12 @@ class TPM_NV_INDEX(TpmEnum): # UINT32
     RhNv_BIT_LENGTH = 8
 # bitfield TPM_NV_INDEX
 
+class TPM_SESSION_TYPE(TpmEnum):
+    TRIAL = 0x1
+    POLICY = 0x2
+    HMAC = 0x3
+    PASSWORD = 0x4
+
 class TPMA_NV(TpmEnum): # UINT32
     """ This structure allows the TPM to keep track of the data and
     permissions to manipulate an NV Index.

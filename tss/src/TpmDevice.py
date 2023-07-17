@@ -126,11 +126,12 @@ class TSS_TPM_INFO(TpmEnum):
 
 class TPM_TCP_PROTOCOL(TpmEnum):
     SignalPowerOn = 1
-    #SignalPowerOff = 2
+    SignalPowerOff = 2
     SendCommand = 8
     SignalNvOn = 11
     #SignalNvOff = 12
     HandShake = 15
+    SignalReset = 17
     SessionEnd = 20
     Stop = 21
 
