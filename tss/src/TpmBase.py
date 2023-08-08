@@ -4,8 +4,8 @@ from .TpmDevice import *
 from .Crypt import Crypto
 from tpmstream.io.binary import Binary
 from tpmstream.io.pretty import Pretty
-from tpmstream.spec.commands.commands import Command
-from tpmstream.spec.commands.responses import Response
+from tpmstream.spec.commands import Command
+from tpmstream.spec.commands import Response
 
 Owner = TPM_HANDLE(TPM_RH.OWNER)
 Endorsement = TPM_HANDLE(TPM_RH.ENDORSEMENT)
